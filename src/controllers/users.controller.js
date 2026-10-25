@@ -1,18 +1,20 @@
-let users = require("../models/users");
-let posts = require("../models/posts");
+// let users = require("../models/users");
+const User = require("../models/User");
+const Post = require("../models/Post");
 
 class UsersControllers {
-    getAll = (req, res) => {
+    getAll = async (req, res) => {
+        const users = await User.find();
         res.status(200).json({
             message: "Fetched All data",
             data: users
         })
     }
 
-    getOne = (req, res) => {
-        const id = +req.params.id;
+    getOne = async (req, res) => {
+        const id = req.params.id;
 
-        const user = users.find(e => e.id === id);
+        const user = await User.findById(id);
 
         if(!user) return res.status(404).json({
             message: "User Not Found"
@@ -24,28 +26,20 @@ class UsersControllers {
         })
     }
 
-    add = (req, res) => {
+    add = async (req, res) => {
         const { name, username, email, avatar, bio } = req.body;
 
         // email is unique
-        const emailIsExist = users.find(e => e.email === email);
-
+        const emailIsExist = await User.findOne({ email });
+        
         if(emailIsExist) 
             return res.status(400).json({ message: "Invalid Email" })
         // username is unique
-        const usernameIsExist = users.find(e => e.username === username);
-
+        const usernameIsExist = await User.findOne({ username })
         if(usernameIsExist) 
             return res.status(400).json({ message: "Invalid Username" })
 
-        const data = { 
-            id: Math.random() * Math.random(), // pk
-            role: "user",
-            name, username, email, avatar, bio,
-            createdAt: new Date() 
-        }
-
-        users.push(data);
+        const data = await User.create({ name, username, email, avatar, bio })
 
         res.status(201).json({
             message: "Added user successfully",
@@ -53,10 +47,10 @@ class UsersControllers {
         })
     }
 
-    update = (req, res) => {
-        const id = +req.params.id;
+    update = async (req, res) => {
+        const id = req.params.id;
 
-        const user = users.find(e => e.id === id);
+        const user = await User.findById(id)
 
         if(!user) return res.status(404).json({
             message: "User Not Found"
@@ -68,23 +62,25 @@ class UsersControllers {
         user.avatar = avatar || user.avatar;
         user.bio = bio || user.bio;
 
+        await user.save();
+
         res.status(200).json({
             message: "User Updated",
             data: user
         })
     }
 
-    remove = (req, res) => {
-        const id = +req.params.id;
+    remove = async (req, res) => {
+        const id = req.params.id;
 
-        const user = users.find(e => e.id === id);
+        const user = await User.findById(id)
 
         if(!user) return res.status(404).json({
             message: "User Not Found"
         })
 
-        users = users.filter(e => e.id !== id);
-        posts = posts.filter(e => e.userId !== id);
+        await User.findByIdAndDelete(id);
+        await Post.deleteMany({ userId: id });
 
         res.status(200).json({
             message: "User is Deleted"

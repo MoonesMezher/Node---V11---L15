@@ -6,6 +6,7 @@ const app = express();
 // export
 const morgan = require("morgan");
 const notFound = require("./middlewares/notFound");
+const connect = require("./utils/connect");
 
 // pre middlewares
 app.use(express.json());
@@ -19,7 +20,4 @@ app.use("/api/posts", require("./routes/posts.routes"));
 app.use(notFound);
 
 // listen
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-    console.log("Server is Running")
-});
+connect(app);
