@@ -1,18 +1,23 @@
-let posts = require("../models/posts");
-const users = require("../models/users");
+const Post = require("../models/Post");
+const User = require("../models/User");
 
 class PostsControllers {
-    getAll = (req, res) => {
+    getAll = async (req, res) => {
+        const posts = await Post.find();
+
         res.status(200).json({
             message: "Fetched All data",
             data: posts
         })
     }
 
-    getOne = (req, res) => {
-        const id = +req.params.id;
+    getOne = async (req, res) => {
+        const id = req.params.id;
 
-        const post = posts.find(e => e.id === id);
+        const post = await Post.findById(id).populate("userId");
+
+        // userId: id - categoryId: id
+        // userId: { .. } - categoryId: { .. }
 
         if(!post) return res.status(404).json({
             message: "Post Not Found"
@@ -24,23 +29,17 @@ class PostsControllers {
         })
     }
 
-    add = (req, res) => {
+    add = async (req, res) => {
         const { userId } = req.params;
 
-        const user = users.find(e => e.id === userId);
+        const user = await User.findById(userId);
+        // users.find(e => e.id === userId);
 
         if(!user) return res.status(404).json({ message: "User Not Found" });
 
         const { title, body, published, tags } = req.body;
 
-        const data = { 
-            id: Math.random() * Math.random(), // pk
-            userId,
-            title, body, published, tags,
-            createdAt: new Date() 
-        }
-
-        posts.push(data);
+        const data = await Post.create({ userId, title, body, published, tags })
 
         res.status(201).json({
             message: "Added post successfully",
@@ -48,10 +47,10 @@ class PostsControllers {
         })
     }
 
-    update = (req, res) => {
-        const id = +req.params.id;
+    update = async (req, res) => {
+        const id = req.params.id;
 
-        const post = posts.find(e => e.id === id);
+        const post = await Post.findById(id);
 
         if(!post) return res.status(404).json({
             message: "Post Not Found"
@@ -64,22 +63,24 @@ class PostsControllers {
         post.published = published || post.published;
         post.tags = tags || post.tags;
 
+        await post.save();
+
         res.status(200).json({
             message: "Post Updated",
             data: post
         })
     }
 
-    remove = (req, res) => {
-        const id = +req.params.id;
+    remove = async (req, res) => {
+        const id = req.params.id;
 
-        const post = posts.find(e => e.id === id);
+        const post = await Post.findById(id);
 
         if(!post) return res.status(404).json({
             message: "Post Not Found"
         });
 
-        posts = posts.filter(e => e.id !== id);
+        await Post.findByIdAndDelete(id);
 
         res.status(200).json({
             message: "Post is Deleted"
