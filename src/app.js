@@ -7,6 +7,7 @@ const app = express();
 const morgan = require("morgan");
 const notFound = require("./middlewares/notFound");
 const connect = require("./utils/connect");
+const error = require("./middlewares/error");
 
 // pre middlewares
 app.use(express.json());
@@ -18,6 +19,7 @@ app.use("/api/posts", require("./routes/posts.routes"));
 app.use("/api/categories", require("./routes/categories.routes"));
 
 // post middlewares
+app.use(error);
 app.use(notFound);
 
 // listen

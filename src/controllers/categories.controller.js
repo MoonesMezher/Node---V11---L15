@@ -1,22 +1,22 @@
 const Category = require("../models/Category");
 const Post = require("../models/Post")
+const collection = require("../utils/collection");
 class CategoriesController {
-    getAll = async (req, res) => {
+    getAll = async (req, res) => { 
         const categories = await Category.find();
 
-        res.status(200).json({
-            message: "GET ALL DATA SUCCESSFULLY",
-            categories
-        })
+        res.status(200).json(
+            collection.success("GET ALL DATA SUCCESSFULLY", categories)
+        )
     }
     getOne = async (req, res) => {
         const id = req.params.id;
 
         const category = await Category.findById(id);
 
-        if(!category) return res.status(404).json({
-            message: "CATEGORY NOT FOUND"
-        });
+        if(!category) return res.status(404).json(
+            collection.error("CATEGORY NOT FOUND")
+        );
 
         const posts = await Post.find({ categoryId: id })
 
