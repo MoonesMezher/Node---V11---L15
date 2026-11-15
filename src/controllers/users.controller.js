@@ -4,10 +4,38 @@ const Post = require("../models/Post");
 
 class UsersControllers {
     getAll = async (req, res) => {
-        const users = await User.find();
+        // limit
+        const limit = 2;
+        // page
+        // ?page=5
+        const page = req.query.page || 1;
+        // total
+        const total = await User.countDocuments();
+        // pages
+        const pages = Math.ceil(total / limit);
+        // data 
+        // page = 1 => skip = 0
+        // page = 2 => skip = 50
+        // page = 3 => skip = 100
+        const skip = (page - 1) * limit;
+        const users = await User
+            .find()
+            .skip(skip)
+            .limit(limit);
+        // pagination
+        const pagination = {
+            limit,
+            total, 
+            pages,
+            page,
+            isPrev: page > 1,
+            isNext: page < pages,
+        };
+
         res.status(200).json({
             message: "Fetched All data",
-            data: users
+            data: users,
+            pagination
         })
     }
 
