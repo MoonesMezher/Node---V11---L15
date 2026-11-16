@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    password: {
+        type: String,
+        required: true
+    },
     avatar: {
         type: String,
         default: "path/image.png"
@@ -28,6 +32,9 @@ const userSchema = new mongoose.Schema({
 }, { 
     timestamps: true,
     toJSON: {
+        virtuals: true
+    },
+    toObject: {
         virtuals: true
     }
 }); // schema 
@@ -54,9 +61,9 @@ userSchema.method(
 // const user = await User.findOne({ email })
 // user.short()
 
-userSchema.pre("save", function() {})
+/* userSchema.pre("save", function() {})
 
-userSchema.post("save", function() {})
+userSchema.post("save", function() {}) */
 
 const User = mongoose.model("User", userSchema); // model = collection
 
